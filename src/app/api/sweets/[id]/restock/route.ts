@@ -1,46 +1,35 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { Restock } from '@/lib/validations'
+import { createClient } from '@/lib/supabase/server';
+import { Restock } from '@/lib/validations';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'You must be logged in to restock a sweet.' } }, { status: 401 })
+        return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
     }
 
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
 
     if (profile?.role !== 'admin') {
-        return NextResponse.json({ error: { code: 'FORBIDDEN', message: 'You do not have permission to restock a sweet.' } }, { status: 403 })
+        return NextResponse.json({ error: { code: 'FORBIDDEN', message: 'Forbidden' } }, { status: 403 });
     }
 
-    const { id: sweet_id } = params
-    const json = await request.json()
-    const validated = Restock.safeParse(json)
+    const body = await request.json();
+    const parsed = Restock.safeParse(body);
 
-    if (!validated.success) {
-        return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid request body', details: validated.error.flatten() } }, { status: 400 })
+    if (!parsed.success) {
+        return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid request body', details: parsed.error.errors } }, { status: 400 });
     }
 
-    const { quantity } = validated.data
+    const { quantity } = parsed.data;
 
-    const { data: sweet, error: fetchError } = await supabase.from('sweets').select('quantity').eq('id', sweet_id).single()
-
-    if(fetchError) {
-        return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: fetchError.message } }, { status: 500 })
-    }
-
-    if(!sweet) {
-        return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Sweet not found' } }, { status: 404 })
-    }
-
-    const { data, error } = await supabase.from('sweets').update({ quantity: sweet.quantity + quantity }).eq('id', sweet_id).select().single()
+    const { data, error } = await supabase.rpc('increment_sweet_quantity', { sweet_id: params.id, p_quantity: quantity });
 
     if (error) {
-        return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: error.message } }, { status: 500 })
+        return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: error.message } }, { status: 500 });
     }
 
-    return NextResponse.json({ data })
+    return NextResponse.json({ data });
 }

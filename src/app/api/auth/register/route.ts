@@ -1,42 +1,32 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { AuthRegister } from '@/lib/validations'
+import { createClient } from '@/lib/supabase/server';
+import { AuthRegister } from '@/lib/validations';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const supabase = createClient()
-  const json = await request.json()
-  const validated = AuthRegister.safeParse(json)
+  const supabase = createClient();
+  const body = await request.json();
+  const parsed = AuthRegister.safeParse(body);
 
-  if (!validated.success) {
-    return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid request body', details: validated.error.flatten() } }, { status: 400 })
+  if (!parsed.success) {
+    return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid request body', details: parsed.error.errors } }, { status: 400 });
   }
 
-  const { email, password, name } = validated.data
+  const { email, password, name } = parsed.data;
 
-  const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        name,
-      },
-    },
-  })
+  const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
-  if (signUpError) {
-    return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: signUpError.message } }, { status: 500 })
+  if (authError) {
+    return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: authError.message } }, { status: 400 });
   }
 
-  // Also create a profile for the new user
-  if (user) {
-      const { error: profileError } = await supabase.from('profiles').insert({ id: user.id, name, role: 'user' })
-      if (profileError) {
-        // If profile creation fails, we should probably delete the user, but for now we just log the error
-        console.error('Failed to create profile for user:', user.id, profileError)
-        return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: 'Failed to create user profile.' } }, { status: 500 })
-      }
+  if (authData.user) {
+    const { error: profileError } = await supabase.from('profiles').insert({ id: authData.user.id, name });
+    if (profileError) {
+        // Here you might want to handle the case where profile creation fails
+        // For now, we'll just log it and return success as the user is created.
+        console.error("Failed to create profile:", profileError);
+    }
   }
 
-
-  return NextResponse.json({ user })
+  return NextResponse.json({ data: authData });
 }

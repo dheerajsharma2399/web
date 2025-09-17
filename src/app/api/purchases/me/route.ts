@@ -1,37 +1,28 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { QueryParams } from '@/lib/validations'
+import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+export async function GET(request: NextRequest) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'You must be logged in to view your purchases.' } }, { status: 401 })
+        return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const query = Object.fromEntries(searchParams.entries())
-    const validated = QueryParams.safeParse(query)
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(search_params.get('limit') || '10');
 
-    if (!validated.success) {
-        return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid query parameters', details: validated.error.flatten() } }, { status: 400 })
-    }
-
-    const { page, limit, sort, dir } = validated.data
-
-    let queryBuilder = supabase.from('purchases').select('*, sweets(*)').eq('user_id', user.id)
-
-    const from = (page - 1) * limit
-    const to = from + limit - 1
-
-    queryBuilder = queryBuilder.range(from, to).order(sort, { ascending: dir === 'asc' })
-
-    const { data, error } = await queryBuilder
+    const { data, error } = await supabase
+        .from('purchases')
+        .select('*, sweets(*)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .range((page - 1) * limit, page * limit - 1);
 
     if (error) {
-        return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: error.message } }, { status: 500 })
+        return NextResponse.json({ error: { code: 'SUPABASE_ERROR', message: error.message } }, { status: 500 });
     }
 
-    return NextResponse.json({ data })
+    return NextResponse.json({ data });
 }
