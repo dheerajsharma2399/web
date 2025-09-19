@@ -2,7 +2,8 @@
 "use client"
 
 import * as React from "react"
-import { ToastProviderProps } from "@radix-ui/react-toast"
+import * as RadixToast from "@radix-ui/react-toast"
+import { X } from "lucide-react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
