@@ -40,9 +40,11 @@ export default function RegisterPage() {
     if (response.ok) {
       toast({
         title: 'Registration Successful',
-        description: 'You can now log in.',
+        description: 'You can now log in. Redirecting...',
       })
-      router.push('/login')
+      setTimeout(() => {
+        router.push('/login')
+      }, 1000)
     } else {
       toast({
         title: 'Registration Failed',

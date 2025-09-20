@@ -2,6 +2,11 @@
 -- Enable UUIDs
 create extension if not exists "uuid-ossp";
 
+-- Utility trigger fn
+create or replace function public.set_current_timestamp_on_update()
+returns trigger language plpgsql as $$
+begin new.updated_at = now(); return new; end; $$;
+
 -- Profiles: attaches role to Supabase auth.users
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -13,11 +18,6 @@ create table public.profiles (
 create trigger trg_profiles_updated
 before update on public.profiles
 for each row execute procedure public.set_current_timestamp_on_update();
-
--- Utility trigger fn
-create or replace function public.set_current_timestamp_on_update()
-returns trigger language plpgsql as $$
-begin new.updated_at = now(); return new; end; $$;
 
 -- Sweets catalog
 create table public.sweets (

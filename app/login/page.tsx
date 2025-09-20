@@ -40,9 +40,12 @@ export default function LoginPage() {
     if (response.ok) {
       toast({
         title: 'Login Successful',
-        description: 'You have been logged in.',
+        description: 'You have been logged in. Redirecting...',
       })
-      router.push('/dashboard')
+      setTimeout(() => {
+        router.push('/dashboard')
+        router.refresh()
+      }, 1000)
     } else {
       toast({
         title: 'Login Failed',

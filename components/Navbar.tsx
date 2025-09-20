@@ -1,42 +1,39 @@
-// apps/web/components/Navbar.tsx
 'use client'
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useTheme } from 'next-themes'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, ShoppingCart } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { createClientSupabaseClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
+import { Session, User } from '@supabase/supabase-js'
+import { useCart } from '@/providers/cart-provider'
 
-export default function Navbar() {
+export default function Navbar({ session }: { session: Session | null }) {
   const { setTheme } = useTheme()
   const router = useRouter()
   const supabase = createClientSupabaseClient()
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(session?.user ?? null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const { totalItems } = useCart()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-        setIsAdmin(profile?.role === 'admin')
-      }
+    const fetchUserProfile = async (user: User) => {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      setIsAdmin(profile?.role === 'admin')
     }
-    getUser()
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null)
-      if (session?.user) {
-        const getProfileOnAuthChange = async () => {
-          const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
-          setIsAdmin(profile?.role === 'admin')
-        }
-        getProfileOnAuthChange()
+    if (user) {
+      fetchUserProfile(user)
+    }
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+      const newUser = newSession?.user ?? null
+      setUser(newUser)
+      if (newUser) {
+        fetchUserProfile(newUser)
       } else {
         setIsAdmin(false)
       }
@@ -45,13 +42,14 @@ export default function Navbar() {
     return () => {
       authListener.subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [user, supabase])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', {
       method: 'POST',
     })
     router.push('/login')
+    router.refresh()
   }
 
   return (
@@ -61,6 +59,9 @@ export default function Navbar() {
           Sweet Shop
         </Link>
         <div className="flex items-center space-x-4">
+          <Link href="/">
+            <Button variant="ghost">Shop</Button>
+          </Link>
           {user ? (
             <>
               <Link href="/dashboard">
@@ -106,6 +107,18 @@ export default function Navbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Link href="/checkout">
+            <Button variant="ghost" className="relative p-2">
+              <ShoppingCart className="h-6 w-6" />
+              {totalItems > 0 && (
+                <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+              <span className="sr-only">Open cart</span>
+            </Button>
+          </Link>
         </div>
       </div>
     </nav>

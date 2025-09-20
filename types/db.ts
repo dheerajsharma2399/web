@@ -31,3 +31,23 @@ export type Profile = {
   created_at: string;
   updated_at: string;
 }
+
+export interface OrderItem {
+  sweet_id: string;
+  name: string;
+  image_url?: string | null;
+  quantity: number;
+  unit_price_cents: number;
+}
+
+export interface Order {
+  id: string;
+  user_id: string;
+  customer_name: string;
+  address: string;
+  contact_number: string;
+  items: OrderItem[];
+  total_price_cents: number;
+  status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+  created_at: string;
+}

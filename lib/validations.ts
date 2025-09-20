@@ -13,7 +13,7 @@ export const AuthLoginSchema = z.object({
 })
 
 export const SweetSchema = z.object({
-  name: z.string().min(1, 'Name is required').unique(),
+  name: z.string().min(1, 'Name is required'),
   category: z.enum(['chocolate', 'candy', 'cookie', 'cake', 'pastry', 'other']),
   price_cents: z.number().int().min(0, 'Price must be non-negative'),
   quantity: z.number().int().min(0, 'Quantity must be non-negative'),

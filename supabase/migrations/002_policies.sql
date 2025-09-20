@@ -8,6 +8,8 @@ create policy "read own profile" on public.profiles for select
   using (auth.uid() = id);
 create policy "update own profile" on public.profiles for update
   using (auth.uid() = id);
+create policy "create own profile" on public.profiles for insert
+  with check (auth.uid() = id);
 
 -- Sweets: anyone authed can read; only admins can write
 create policy "read sweets" on public.sweets for select using (true);
