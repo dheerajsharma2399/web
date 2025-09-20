@@ -1,10 +1,11 @@
 // apps/web/middleware.ts
 import { NextResponse, type NextRequest } from 'next/server'
-import { createMiddlewareClient } from '@supabase/ssr'
+import * as SupabaseSsr from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
-  console.log('createMiddlewareClient:', createMiddlewareClient)
   const response = NextResponse.next()
+  const supabase = createMiddlewareClient({ req: request, res: response })
+  console.log('Supabase client in middleware:', supabase)
   return response
 }
 
