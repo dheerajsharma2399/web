@@ -1,4 +1,3 @@
-// apps/web/app/layout.tsx
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -6,7 +5,8 @@ import { ThemeProvider } from '@/providers/theme-provider'
 import QueryProvider from '@/providers/query-provider'
 import { Toaster } from '@/components/ui/toaster'
 import Navbar from '@/components/Navbar'
-import { CartProvider } from '@/providers/cart-provider'
+import { getSession } from '@/lib/auth'
+import { CartProvider } from '@/providers/cart-provider' // Ensure this import is correct
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   title: 'Sweet Shop',
   description: 'Manage your sweet shop inventory and sales.',
 }
-
-import { getSession } from '@/lib/auth'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession()

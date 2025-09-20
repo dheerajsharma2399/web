@@ -37,38 +37,48 @@ export default function CheckoutPage() {
 
   async function onSubmit(data: FormData) {
     setIsLoading(true)
-    const response = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...data,
-        items: cart.map(item => ({
-          sweet_id: item.sweet.id,
-          name: item.sweet.name, // Add name
-          image_url: item.sweet.image_url, // Add image_url
-          quantity: item.quantity,
-          unit_price_cents: item.sweet.price_cents,
-        })),
-        total_price_cents: totalPriceCents,
-      }),
-    })
-
-    setIsLoading(false)
-
-    if (response.ok) {
-      toast({
-        title: 'Order Placed!',
-        description: 'Your order has been successfully placed.',
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          items: cart.map(item => ({
+            sweet_id: item.sweet.id,
+            name: item.sweet.name, // Add name
+            image_url: item.sweet.image_url, // Add image_url
+            quantity: item.quantity,
+            unit_price_cents: item.sweet.price_cents,
+          })),
+          total_price_cents: totalPriceCents,
+        }),
       })
-      clearCart()
-      router.push('/dashboard')
-    } else {
-      const result = await response.json()
+
+      setIsLoading(false)
+
+      if (response.ok) {
+        toast({
+          title: 'Order Placed!',
+          description: 'Your order has been successfully placed.',
+        })
+        clearCart()
+        router.push('/dashboard')
+      } else {
+        const result = await response.json()
+        toast({
+          title: 'Order Failed',
+          description: result.error?.message || 'There was an error placing your order.',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch during checkout:', error)
+      setIsLoading(false)
       toast({
-        title: 'Order Failed',
-        description: result.error?.message || 'There was an error placing your order.',
+        title: 'Network Error',
+        description: 'Could not connect to the server. Please check your internet connection.',
         variant: 'destructive',
       })
     }
@@ -79,7 +89,7 @@ export default function CheckoutPage() {
       <div className="text-center">
         <h1 className="text-3xl font-bold">Your Cart is Empty</h1>
         <p className="text-muted-foreground">Add some sweets to your cart to get started.</p>
-        <Button onClick={() => router.push('/')} className="mt-4">Go Shopping</Button>
+        <Button onClick={() => router.push('/shop')} className="mt-4">Go Shopping</Button>
       </div>
     )
   }

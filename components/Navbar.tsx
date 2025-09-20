@@ -45,11 +45,24 @@ export default function Navbar({ session }: { session: Session | null }) {
   }, [user, supabase])
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-    })
-    router.push('/login')
-    router.refresh()
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Logout failed:', errorData)
+        // Optionally, show a user-friendly error message
+        return
+      }
+
+      router.push('/login')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to fetch during logout:', error)
+      // Optionally, show a user-friendly error message
+    }
   }
 
   return (
@@ -59,7 +72,7 @@ export default function Navbar({ session }: { session: Session | null }) {
           Sweet Shop
         </Link>
         <div className="flex items-center space-x-4">
-          <Link href="/">
+          <Link href="/shop">
             <Button variant="ghost">Shop</Button>
           </Link>
           {user ? (
