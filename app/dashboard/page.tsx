@@ -1,9 +1,11 @@
+// app/dashboard/page.tsx
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Order, OrderItem } from '@/types/db'
+import { Order, OrderItem, Profile } from '@/types/db'
 import Image from 'next/image'
+import ProfileForm from './ProfileForm'
 
 export default async function DashboardPage() {
   const user = await getUser()
@@ -12,15 +14,45 @@ export default async function DashboardPage() {
   }
 
   const supabase = createServerSupabaseClient()
-  const { data: orders, error } = await supabase
+  const { data: orders, error: ordersError } = await supabase
     .from('orders')
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching orders:', error)
-    return <div className="text-red-500">Failed to load orders.</div>
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
+
+  let profileData: Profile | null = null;
+  if (profileError) {
+    console.warn('Profile not found for user, creating a default one.', profileError);
+    const { data: newProfile, error: newProfileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.id,
+        name: user.email?.split('@')[0] || 'New User',
+        role: 'user',
+        phone_number: '',
+        address: '',
+      })
+      .select()
+      .single();
+
+    if (newProfileError) {
+      console.error('Error creating new profile:', newProfileError);
+      return <div className="text-red-500">Failed to create profile.</div>;
+    }
+    profileData = newProfile;
+  } else {
+    profileData = profile;
+  }
+
+  if (ordersError || !profileData) {
+    console.error('Error fetching data:', ordersError || 'Profile data is missing.');
+    return <div className="text-red-500">Failed to load dashboard data.</div>;
   }
 
   return (
@@ -32,7 +64,7 @@ export default async function DashboardPage() {
           {orders.length === 0 ? (
             <div className="bg-card p-6 rounded-lg shadow-md text-center">
               <p>You haven't placed any orders yet.</p>
-              <Link href="/" className="underline mt-2 inline-block">
+              <Link href="/shop" className="underline mt-2 inline-block">
                 Start shopping!
               </Link>
             </div>
@@ -77,9 +109,7 @@ export default async function DashboardPage() {
         </div>
         <div className="bg-card p-6 rounded-lg shadow-md self-start">
           <h2 className="text-2xl font-semibold mb-4">Profile</h2>
-          <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>User ID:</strong> {user.id}</p>
-          {/* Add more profile info if needed */}
+          <ProfileForm profile={profileData as Profile} email={user.email!} />
         </div>
       </div>
     </div>

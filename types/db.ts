@@ -28,6 +28,8 @@ export type Profile = {
   id: string;
   name: string;
   role: 'user' | 'admin';
+  phone_number?: string;
+  address?: string;
   created_at: string;
   updated_at: string;
 }

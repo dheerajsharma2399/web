@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { useCart } from '@/providers/cart-provider'
+import { useToast } from '@/components/ui/use-toast'
 
 export default function Navbar({ user: initialUser }: { user: User | null }) {
   const { setTheme } = useTheme()
@@ -18,6 +19,7 @@ export default function Navbar({ user: initialUser }: { user: User | null }) {
   const [user, setUser] = useState<User | null>(initialUser)
   const [isAdmin, setIsAdmin] = useState(false)
   const { totalItems } = useCart()
+  const { toast } = useToast()
 
   useEffect(() => {
     const fetchUserProfile = async (user: User) => {
@@ -53,15 +55,27 @@ export default function Navbar({ user: initialUser }: { user: User | null }) {
       if (!response.ok) {
         const errorData = await response.json()
         console.error('Logout failed:', errorData)
-        // Optionally, show a user-friendly error message
+        toast({
+          title: 'Logout Failed',
+          description: errorData.error?.message || 'An error occurred.',
+          variant: 'destructive',
+        })
         return
       }
 
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      })
       router.push('/login')
       router.refresh()
     } catch (error) {
       console.error('Failed to fetch during logout:', error)
-      // Optionally, show a user-friendly error message
+      toast({
+        title: 'Logout Failed',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      })
     }
   }
 

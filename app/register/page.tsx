@@ -47,8 +47,8 @@ export default function RegisterPage() {
 
     if (response.ok) {
       toast({
-        title: 'Registration Successful',
-        description: 'You can now log in. Redirecting...',
+        title: 'Confirmation email sent',
+        description: 'Please check your inbox to confirm your email address.',
       })
       setTimeout(() => {
         router.push('/login')
