@@ -3,12 +3,12 @@ import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { PurchaseSchema } from '@/lib/validations'
 import { ZodError } from 'zod'
-import { getSession } from '@/lib/auth'
+import { getUser } from '@/lib/auth'
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getSession()
-    if (!session) {
+    const user = await getUser()
+    if (!user) {
       return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } }, { status: 401 })
     }
 
@@ -18,7 +18,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { quantity } = PurchaseSchema.parse(body)
 
     const { data, error } = await supabase.rpc('perform_purchase', {
-      p_user: session.user.id,
+      p_user: user.id,
       p_sweet: sweet_id,
       p_qty: quantity,
     })

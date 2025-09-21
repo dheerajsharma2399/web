@@ -1,15 +1,15 @@
 // apps/web/app/api/purchases/me/route.ts
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { getSession } from '@/lib/auth'
+import { getUser } from '@/lib/auth'
 import { SweetFilterSchema } from '@/lib/validations'
 import { ZodError } from 'zod'
 import { getPagination } from '@/lib/pagination'
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession()
-    if (!session) {
+    const user = await getUser()
+    if (!user) {
       return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } }, { status: 401 })
     }
 
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const parsedFilters = SweetFilterSchema.parse(Object.fromEntries(searchParams))
     const { page, limit, sort, dir } = parsedFilters
 
-    let query = supabase.from('purchases').select('*, sweets(*)').eq('user_id', session.user.id)
+    let query = supabase.from('purchases').select('*, sweets(*)').eq('user_id', user.id)
 
     const { from, to } = getPagination(page, limit)
     query = query.range(from, to).order(sort, { ascending: dir === 'asc' })

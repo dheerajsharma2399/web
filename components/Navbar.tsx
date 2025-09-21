@@ -11,11 +11,11 @@ import { useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { useCart } from '@/providers/cart-provider'
 
-export default function Navbar({ session }: { session: Session | null }) {
+export default function Navbar({ user: initialUser }: { user: User | null }) {
   const { setTheme } = useTheme()
   const router = useRouter()
   const supabase = createClientSupabaseClient()
-  const [user, setUser] = useState<User | null>(session?.user ?? null)
+  const [user, setUser] = useState<User | null>(initialUser)
   const [isAdmin, setIsAdmin] = useState(false)
   const { totalItems } = useCart()
 
@@ -29,11 +29,11 @@ export default function Navbar({ session }: { session: Session | null }) {
       fetchUserProfile(user)
     }
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
-      const newUser = newSession?.user ?? null
-      setUser(newUser)
-      if (newUser) {
-        fetchUserProfile(newUser)
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      if (user) {
+        fetchUserProfile(user)
       } else {
         setIsAdmin(false)
       }

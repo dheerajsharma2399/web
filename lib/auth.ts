@@ -2,19 +2,6 @@
 import { createServerSupabaseClient } from './supabase/server'
 import { redirect } from 'next/navigation'
 
-export async function getSession() {
-  const supabase = createServerSupabaseClient()
-  try {
-    const { data: {
-      session
-    } } = await supabase.auth.getSession()
-    return session
-  } catch (error) {
-    console.error('Error getting session:', error)
-    return null
-  }
-}
-
 export async function getUser() {
   const supabase = createServerSupabaseClient()
   try {
@@ -52,11 +39,11 @@ export async function getProfile() {
 }
 
 export async function requireAuth() {
-  const session = await getSession()
-  if (!session) {
+  const user = await getUser()
+  if (!user) {
     redirect('/login')
   }
-  return session
+  return user
 }
 
 export async function requireAdmin() {

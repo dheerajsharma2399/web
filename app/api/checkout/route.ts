@@ -18,9 +18,9 @@ const checkoutSchema = z.object({
 
 export async function POST(request: Request) {
   const supabase = createServerSupabaseClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'You must be logged in to make a purchase.' } }, { status: 401 })
   }
 
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   try {
     // Use a transaction to ensure atomicity
     const { data: order, error: orderError } = await supabase.rpc('perform_checkout', {
-      p_user_id: session.user.id,
+      p_user_id: user.id,
       p_customer_name: customer_name,
       p_address: address,
       p_contact_number: contact_number,

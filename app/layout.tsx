@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/providers/theme-provider'
 import QueryProvider from '@/providers/query-provider'
 import { Toaster } from '@/components/ui/toaster'
 import Navbar from '@/components/Navbar'
-import { getSession } from '@/lib/auth'
+import { getUser } from '@/lib/auth'
 import { CartProvider } from '@/providers/cart-provider' // Ensure this import is correct
 
 const inter = Inter({ subsets: ['latin'] })
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await getSession()
+  const user = await getUser()
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           <QueryProvider>
             <CartProvider>
-              <Navbar session={session} />
+              <Navbar user={user} />
               <main className="container mx-auto py-8">
                 {children}
               </main>

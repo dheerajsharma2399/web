@@ -1,13 +1,13 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { getSession } from '@/lib/auth'
+import { getUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Order, OrderItem } from '@/types/db'
 import Image from 'next/image'
 
 export default async function DashboardPage() {
-  const session = await getSession()
-  if (!session) {
+  const user = await getUser()
+  if (!user) {
     redirect('/login')
   }
 
@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const { data: orders, error } = await supabase
     .from('orders')
     .select('*')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -77,8 +77,8 @@ export default async function DashboardPage() {
         </div>
         <div className="bg-card p-6 rounded-lg shadow-md self-start">
           <h2 className="text-2xl font-semibold mb-4">Profile</h2>
-          <p><strong>Email:</strong> {session.user.email}</p>
-          <p><strong>User ID:</strong> {session.user.id}</p>
+          <p><strong>Email:</strong> {user.email}</p>
+          <p><strong>User ID:</strong> {user.id}</p>
           {/* Add more profile info if needed */}
         </div>
       </div>
