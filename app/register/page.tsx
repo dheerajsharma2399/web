@@ -8,6 +8,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { AuthRegisterSchema } from '@/lib/validations'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
@@ -104,6 +112,40 @@ export default function RegisterPage() {
             Login
           </Link>
         </p>
+        <div className="text-center">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">Show Test Credentials</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Test Credentials</DialogTitle>
+                <DialogDescription>
+                  Use these credentials for testing purposes.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Admin Email</Label>
+                  <Input value="admin@test.com" readOnly className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Password</Label>
+                  <Input value="admin123" readOnly className="col-span-3" />
+                </div>
+                <hr />
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">User Email</Label>
+                  <Input value="user@test.com" readOnly className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Password</Label>
+                  <Input value="user123" readOnly className="col-span-3" />
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </div>
   )

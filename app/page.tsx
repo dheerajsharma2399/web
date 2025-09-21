@@ -6,7 +6,7 @@ export default function HomePage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] py-2">
       <main className="flex flex-col items-center justify-center flex-1 px-20 text-center">
         <h1 className="text-6xl font-bold">
-          Welcome to the <span className="text-primary">Sweet Shop</span>
+          Welcome to the Sweet Shop!
         </h1>
 
         <p className="mt-3 text-2xl">
