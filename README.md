@@ -1,32 +1,118 @@
-# Sweet Shop Web Application
+# 🍭 Sweet Shop Management System
 
-This is the Next.js web application for the Sweet Shop Management System.
+A full-stack web application for managing a sweet shop's inventory, sales, and customer orders. Built with Next.js, Supabase, and Tailwind CSS.
 
-## Getting Started
+## ✨ Features
 
-First, run the development server:
+### For Customers:
+- 🛍️ **Browse Sweets**: View a beautiful catalog of sweets with details and prices.
+- 🛒 **Shopping Cart**: Add and remove items from the cart.
+- 💳 **Checkout**: Place orders with a secure checkout process.
+- 👤 **User Dashboard**: View order history and manage personal information.
+- 🔐 **Authentication**: Secure user registration and login.
+
+### For Admins:
+-  ADMIN 📈 **Dashboard**: A dedicated admin section to manage the shop.
+- 🍬 **Sweet Management**: Add, edit, and delete sweets from the catalog.
+- 📦 **Inventory Control**: Update stock quantities.
+- ORDERS 📋 **Order Management**: View and manage all customer orders.
+
+## 🚀 Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Radix UI](https://www.radix-ui.com/) & [Shadcn UI](https://ui.shadcn.com/)
+- **State Management**: [TanStack Query](https://tanstack.com/query/v5)
+- **Backend & DB**: [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage)
+- **Forms**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+- **Icons**: [Lucide React](https://lucide.dev/guide/react)
+- **Testing**: [Jest](https://jestjs.io/), [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/), and [Playwright](https://playwright.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+
+## 💾 Database Schema
+
+The database schema is managed with migration files in `supabase/migrations`.
+
+### Tables:
+- `profiles`: Stores user profile data and roles (`user` or `admin`).
+- `sweets`: The product catalog with details like name, price, quantity, etc.
+- `orders`: Contains information about customer orders.
+- `purchases`: An append-only log of individual sweet purchases (used internally by the `perform_purchase` function).
+
+### Key Functions:
+- `perform_checkout`: A secure PostgreSQL function that handles the entire checkout process atomically. It validates stock, creates an order, and decrements inventory.
+- `perform_purchase`: An atomic function for purchasing a single sweet.
+
+## 🏁 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/) (v20 or higher)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) or [pnpm](https://pnpm.io/)
+- [Supabase Account](https://supabase.com/) and a new project.
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/sweet-shop.git
+    cd sweet-shop
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up environment variables:**
+    Create a `.env.local` file in the root of the project by copying the `.env.example` file.
+    ```bash
+    cp .env.example .env.local
+    ```
+    Update the values in `.env.local` with your Supabase project's URL and keys.
+
+    ```
+    NEXT_PUBLIC_SUPABASE_URL="YOUR_SUPABASE_URL"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
+    SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
+    ```
+
+4.  **Set up the database:**
+    Run the database migrations using the Supabase CLI or by pasting the content of the files in `supabase/migrations` into the Supabase SQL editor.
+
+### Running the Application
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-next dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🧪 Testing
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+-   **Unit & Integration Tests:**
+    ```bash
+    npm test
+    ```
 
-## Learn More
+-   **End-to-End Tests:**
+    ```bash
+    npx playwright test
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+## 🌐 API Endpoints
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Learn Next.js](https://nextjs.org/learn)
+The API routes are located in `app/api`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+-   `/api/auth/login`: Handles user login.
+-   `/api/auth/logout`: Handles user logout.
+-   `/api/auth/register`: Handles user registration.
+-   `/api/checkout`: Processes customer checkouts.
+-   `/api/purchases/me`: Retrieves the current user's purchase history.
+-   `/api/sweets`: API for managing sweets (admin-only for write operations).
+-   `/api/sweets/[id]`: API for a specific sweet.
+-   `/api/sweets/[id]/purchase`: Handles the purchase of a single sweet.
+-   `/api/sweets/[id]/restock`: Restocks a sweet (admin-only).
+
+---
+*This README was generated by Gemini.*
